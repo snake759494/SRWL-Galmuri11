@@ -155,19 +155,23 @@ def scale_mask(mask, tw, th):
     pp = im.load()
     return [[1 if pp[x, y] >= 128 else 0 for x in range(tw)] for y in range(th)]
 
-# erase the full katakana region only (keep icon at <=190)
+# The battle banner (SCR#10) shows exactly 8 tiles = the 64px region x192..255.
+# Original クリティカル (6 kana) is cut at the edge; Korean 크리티컬 (4 chars) fits
+# comfortably, so CENTER it inside the 64px window with a margin — fully visible.
+BANNER_L, BANNER_R = 192, 255      # 8-tile banner window
 for y in range(0, 16):
-    for x in range(a, min(W, z + 1)):
+    for x in range(BANNER_L, min(W, BANNER_R + 1)):
         grid[y][x] = 0
-# fill the FULL span x193..255 like the original (a hardware sprite shows wrapped
-# tiles right after x255, so the text must reach the edge like original ル did)
+# crisp, thicken so green strokes >=2px, scale to a comfortable height; keep natural
+# width (no stretch) so glyph ends are not clipped
 mk = thicken2(to_mask(crisp("크리티컬", 12)), 1, 1)
-mk = scale_mask(mk, z - a - 2, 14)   # ~60px wide, ends flush at x255
+mk = scale_mask(mk, len(mk[0]) + 4, 14)   # slight widen only, height 14
 mk = shear(mk, 8)
-if len(mk[0]) > z - a:
-    mk = [row[: z - a] for row in mk]
+BANNER_W = BANNER_R - BANNER_L + 1        # 64
+if len(mk[0]) > BANNER_W - 4:             # keep >=2px margin each side
+    mk = scale_mask(mk, BANNER_W - 4, len(mk))
 oy = max(0, (16 - len(mk)) // 2)
-ox = a + 1
+ox = BANNER_L + (BANNER_W - len(mk[0])) // 2   # centered in the 64px banner
 stamp(grid, mk, ox, oy, crit_fill, outline=CRIT_OUTLINE)
 pickle.dump({6: grid_to_img(grid, ver, w, h)}, open(os.path.join(STATE, "newres", "hud05.pkl"), "wb"))
 print(f"arc05#6 critical done: span {a}-{z}, glyph {len(mk[0])}x{len(mk)} at x{ox} y{oy}")
