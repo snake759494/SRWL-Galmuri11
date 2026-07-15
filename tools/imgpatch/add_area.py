@@ -38,12 +38,13 @@ def stamp(grid, img, ox, oy, fill=2, outline=1):
             if m[y][x]:
                 grid[oy + y][ox + x] = fill
 
+# original: fill = teal (idx 8-15 all teal), outline = bright gray (idx 1)
 items = [((9, 84), 1, "일본 에리어"), ((89, 175), 1, "지구권 에리어"),
          ((1, 111), 25, "다리우스계 에리어"), ((113, 199), 25, "은하계 에리어")]
 for (x0, x1), ytop, txt in items:
     img = crisp(txt, 12)
     cx = x0 + (x1 - x0 - img.width) // 2
-    stamp(grid, img, max(1, cx), ytop)
+    stamp(grid, img, max(1, cx), ytop, fill=12, outline=1)
 
 res = pickle.load(open(os.path.join(STATE, "newres", "spirits.pkl"), "rb"))
 res[1783] = grid_to_img(grid, ver, w, h)

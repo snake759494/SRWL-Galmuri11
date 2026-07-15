@@ -159,13 +159,15 @@ def scale_mask(mask, tw, th):
 for y in range(0, 16):
     for x in range(a, min(W, z + 1)):
         grid[y][x] = 0
-# crisp galmuri, thicken so green strokes are >=2px, scale to fill the band
+# fill the FULL span x193..255 like the original (a hardware sprite shows wrapped
+# tiles right after x255, so the text must reach the edge like original ル did)
 mk = thicken2(to_mask(crisp("크리티컬", 12)), 1, 1)
-tw = min(z - a - 1, len(mk[0]) + 6)
-mk = scale_mask(mk, tw, 14)
+mk = scale_mask(mk, z - a - 2, 14)   # ~60px wide, ends flush at x255
 mk = shear(mk, 8)
+if len(mk[0]) > z - a:
+    mk = [row[: z - a] for row in mk]
 oy = max(0, (16 - len(mk)) // 2)
-ox = a + max(0, (z - a + 1 - len(mk[0])) // 2)
+ox = a + 1
 stamp(grid, mk, ox, oy, crit_fill, outline=CRIT_OUTLINE)
 pickle.dump({6: grid_to_img(grid, ver, w, h)}, open(os.path.join(STATE, "newres", "hud05.pkl"), "wb"))
 print(f"arc05#6 critical done: span {a}-{z}, glyph {len(mk[0])}x{len(mk)} at x{ox} y{oy}")
@@ -176,22 +178,48 @@ print(f"arc05#6 critical done: span {a}-{z}, glyph {len(mk[0])}x{len(mk)} at x{o
 # Regenerating all 3 screens needs 296 unique tiles > 256 budget, so leave original.
 print("arc03#17 save messages: kept original (tilemap atlas, cannot fit Korean)")
 
-# ---- arc03#3494 terrain chars 空陸海宇 -> 공육해우 (hardcoded cells) ----
+# ---- arc03#3494 terrain chars 空陸海宇 -> 공육해우 (measured 13px cells) ----
 p = payload(get_sub("arc03", 3494))
 grid, ver, w, h = img_to_grid(p)
 W = w * 8
 c = Counter(v for row in grid for v in row if v not in (0, 1))
 fill94 = c.most_common(1)[0][0]
-CELLS = [(48, 61, "공"), (62, 75, "육"), (76, 89, "해"), (90, 103, "우")]
+# kanji cells measured from original: 空48-60 陸61-73 海74-86 宇87-99 (13px pitch)
+X_LO, X_HI = 47, 100  # never touch outside this window (= before Z end / after 宇)
+for y in range(16, 32):
+    for x in range(X_LO, X_HI + 1):
+        grid[y][x] = 0
+CELLS = [(48, 60, "공"), (61, 73, "육"), (74, 86, "해"), (87, 99, "우")]
+
+def stamp_clip(grid, mask, ox, oy, fill, outline, xlo, xhi):
+    hh, ww = len(mask), len(mask[0])
+    for y in range(hh):
+        for x in range(ww):
+            if mask[y][x]:
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        ty, tx = oy + y + dy, ox + x + dx
+                        if 16 <= ty < 32 and xlo <= tx <= xhi and not (
+                            0 <= y + dy < hh and 0 <= x + dx < ww and mask[y + dy][x + dx]):
+                            grid[ty][tx] = outline
+    for y in range(hh):
+        for x in range(ww):
+            if mask[y][x]:
+                ty, tx = oy + y, ox + x
+                if 16 <= ty < 32 and xlo <= tx <= xhi:
+                    grid[ty][tx] = fill
+
 for a, z, txt in CELLS:
-    for y in range(16, 32):
-        for x in range(a, z + 1):
-            grid[y][x] = 0
     m = to_mask(crisp(txt, 12))
     m = fit_width(m, z - a - 1)
-    stamp(grid, m, a + 1, 17, lambda pp: fill94, outline=1)
+    ox = a + max(1, (z - a + 1 - len(m[0])) // 2)
+    stamp_clip(grid, m, ox, 18, fill94, 1, X_LO, X_HI)
+# verify nothing outside window changed
+orig94 = img_to_grid(payload(get_sub("arc03", 3494)))[0]
+bad94 = sum(1 for y in range(32) for x in range(W)
+            if grid[y][x] != orig94[y][x] and not (16 <= y < 32 and X_LO <= x <= X_HI))
+print("arc03#3494 done, fill", fill94, "out-of-window diffs:", bad94)
 new03[3494] = grid_to_img(grid, ver, w, h)
-print("arc03#3494 done, fill", fill94)
 
 res = pickle.load(open(os.path.join(STATE, "newres", "spirits.pkl"), "rb"))
 res.pop(17, None)  # ensure old (broken) save-screen patch is removed
