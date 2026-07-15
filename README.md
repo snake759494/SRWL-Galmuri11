@@ -27,7 +27,7 @@
 2. 원본 파일로 **슈퍼로봇대전 L 한글패치 v0.9.1 롬**을 선택합니다.
    - MD5: `7AB930182FF9D0F4C4EFC96673E112D6`
 3. 패치 파일을 선택해 적용합니다.
-   - **v1.1 (폰트+이미지, 권장)**: `patch/SRWL_K_v0.9.1_Galmuri11_IMG.xdelta` → 결과물 MD5: `E0D7A136A215D37EF443423BC7EC58DF`
+   - **v1.1 (폰트+이미지, 권장)**: `patch/SRWL_K_v0.9.1_Galmuri11_IMG.xdelta` → 결과물 MD5: `238A624CD276E01A87F98D2152C4CB7C`
    - v1.0 (폰트만): `patch/SRWL_K_v0.9.1_Galmuri11.xdelta` → 결과물 MD5: `36ADDB073C1223510B2BA48B16427DF6`
 
 명령줄 사용 시:

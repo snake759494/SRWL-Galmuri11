@@ -185,7 +185,8 @@ W = w * 8
 c = Counter(v for row in grid for v in row if v not in (0, 1))
 fill94 = c.most_common(1)[0][0]
 # kanji cells measured from original: 空48-60 陸61-73 海74-86 宇87-99 (13px pitch)
-X_LO, X_HI = 47, 100  # never touch outside this window (= before Z end / after 宇)
+# window ends at 99: x100 is the ＝ symbol's leftmost column, must not be erased
+X_LO, X_HI = 47, 99
 for y in range(16, 32):
     for x in range(X_LO, X_HI + 1):
         grid[y][x] = 0
