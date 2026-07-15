@@ -58,18 +58,23 @@ ramp = build_ramp(plt, 0, exclude=(0,))
 f13 = ImageFont.truetype(BATANG, 13)
 f12 = ImageFont.truetype(BATANG, 12)
 
+# keep >=1 tile (8px) margin on each side: text must fit within x[MARGIN, 256-MARGIN]
+MARGIN = 8
+MAXW = 256 - 2 * MARGIN  # 240
 canvas = [[0] * 256 for _ in range(h * 8)]
 n = min(len(bands), len(LINES))
 for bi in range(n):
     b0, b1 = bands[bi]
     txt = LINES[bi]
     g, a = render_text_gray(txt, f13, stroke=0)
-    if a.width > 250:
+    if a.width > MAXW:
         g, a = render_text_gray(txt, f12, stroke=0)
-    if a.width > 250:
-        g = g.resize((250, g.height), Image.LANCZOS)
-        a = a.resize((250, a.height), Image.LANCZOS)
-    x0 = (256 - a.width) // 2
+    if a.width > MAXW:
+        g = g.resize((MAXW, g.height), Image.LANCZOS)
+        a = a.resize((MAXW, a.height), Image.LANCZOS)
+    x0 = max(MARGIN, (256 - a.width) // 2)
+    if x0 + a.width > 256 - MARGIN:
+        x0 = 256 - MARGIN - a.width
     yc = (b0 + b1) // 2 - a.height // 2
     ga, aa = g.load(), a.load()
     for y in range(a.height):
