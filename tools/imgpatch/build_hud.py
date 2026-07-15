@@ -170,32 +170,11 @@ stamp(grid, mk, ox, oy, crit_fill, outline=CRIT_OUTLINE)
 pickle.dump({6: grid_to_img(grid, ver, w, h)}, open(os.path.join(STATE, "newres", "hud05.pkl"), "wb"))
 print(f"arc05#6 critical done: span {a}-{z}, glyph {len(mk[0])}x{len(mk)} at x{ox} y{oy}")
 
-# ---- arc03#17 save messages ----
-MSGS17 = [
-    (0, 0, 71, "세이브 중입니다.", "L"),
-    (0, 144, 255, "데이터를 읽지 못했습니다.", "L"),
-    (1, 0, 127, "전원을 끄지 마세요.", "L"),
-    (1, 144, 255, "데이터를 쓰지 못했습니다.", "L"),
-    (2, 0, 223, "전원을 끄고 닌텐도 DS 전용 게임 카드를", "L"),
-    (3, 40, 223, "다시 꽂아 주세요.", "L"),
-]
-p = payload(get_sub("arc03", 17))
-grid, ver, w, h = img_to_grid(p)
-W = w * 8
-c = Counter(v for row in grid for v in row if v not in (0, 1))
-fill17 = c.most_common(1)[0][0]
-for band, a, z, txt, align in MSGS17:
-    y0 = band * 16
-    for y in range(y0, y0 + 16):
-        for x in range(a, min(W, z + 1)):
-            grid[y][x] = 0
-    m = to_mask(crisp(txt, 12))
-    m = fit_width(m, z - a)
-    ox = a
-    oy = y0 + max(0, (15 - len(m)) // 2)
-    stamp(grid, m, ox, oy, lambda pp: fill17, outline=1)
-new03[17] = grid_to_img(grid, ver, w, h)
-print("arc03#17 done, fill", fill17)
+# ---- arc03#17 save messages: NOT patched ----
+# IMG#17 is a shared tile atlas composed by SCR#18/19/20 (3 different save screens),
+# NOT a linear image. A linear pixel overwrite corrupts the tilemap (screen breaks).
+# Regenerating all 3 screens needs 296 unique tiles > 256 budget, so leave original.
+print("arc03#17 save messages: kept original (tilemap atlas, cannot fit Korean)")
 
 # ---- arc03#3494 terrain chars 空陸海宇 -> 공육해우 (hardcoded cells) ----
 p = payload(get_sub("arc03", 3494))
@@ -215,9 +194,10 @@ new03[3494] = grid_to_img(grid, ver, w, h)
 print("arc03#3494 done, fill", fill94)
 
 res = pickle.load(open(os.path.join(STATE, "newres", "spirits.pkl"), "rb"))
+res.pop(17, None)  # ensure old (broken) save-screen patch is removed
 res.update(new03)
 pickle.dump(res, open(os.path.join(STATE, "newres", "spirits.pkl"), "wb"))
-print("saved into spirits.pkl; total:", len(res))
+print("saved into spirits.pkl; total:", len(res), "(17 present:", 17 in res, ")")
 
 # review renders
 plt = parse_plt(payload(get_sub("arc03", 1985)))
