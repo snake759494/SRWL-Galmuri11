@@ -178,52 +178,12 @@ print(f"arc05#6 critical done: span {a}-{z}, glyph {len(mk[0])}x{len(mk)} at x{o
 # Regenerating all 3 screens needs 296 unique tiles > 256 budget, so leave original.
 print("arc03#17 save messages: kept original (tilemap atlas, cannot fit Korean)")
 
-# ---- arc03#3494 terrain chars 空陸海宇 -> 공육해우 (measured 13px cells) ----
-p = payload(get_sub("arc03", 3494))
-grid, ver, w, h = img_to_grid(p)
-W = w * 8
-c = Counter(v for row in grid for v in row if v not in (0, 1))
-fill94 = c.most_common(1)[0][0]
-# kanji cells measured from original: 空48-60 陸61-73 海74-86 宇87-99 (13px pitch)
-# window ends at 99: x100 is the ＝ symbol's leftmost column, must not be erased
-X_LO, X_HI = 47, 99
-for y in range(16, 32):
-    for x in range(X_LO, X_HI + 1):
-        grid[y][x] = 0
-CELLS = [(48, 60, "공"), (61, 73, "육"), (74, 86, "해"), (87, 99, "우")]
-
-def stamp_clip(grid, mask, ox, oy, fill, outline, xlo, xhi):
-    hh, ww = len(mask), len(mask[0])
-    for y in range(hh):
-        for x in range(ww):
-            if mask[y][x]:
-                for dy in (-1, 0, 1):
-                    for dx in (-1, 0, 1):
-                        ty, tx = oy + y + dy, ox + x + dx
-                        if 16 <= ty < 32 and xlo <= tx <= xhi and not (
-                            0 <= y + dy < hh and 0 <= x + dx < ww and mask[y + dy][x + dx]):
-                            grid[ty][tx] = outline
-    for y in range(hh):
-        for x in range(ww):
-            if mask[y][x]:
-                ty, tx = oy + y, ox + x
-                if 16 <= ty < 32 and xlo <= tx <= xhi:
-                    grid[ty][tx] = fill
-
-for a, z, txt in CELLS:
-    m = to_mask(crisp(txt, 12))
-    m = fit_width(m, z - a - 1)
-    ox = a + max(1, (z - a + 1 - len(m[0])) // 2)
-    stamp_clip(grid, m, ox, 18, fill94, 1, X_LO, X_HI)
-# verify nothing outside window changed
-orig94 = img_to_grid(payload(get_sub("arc03", 3494)))[0]
-bad94 = sum(1 for y in range(32) for x in range(W)
-            if grid[y][x] != orig94[y][x] and not (16 <= y < 32 and X_LO <= x <= X_HI))
-print("arc03#3494 done, fill", fill94, "out-of-window diffs:", bad94)
-new03[3494] = grid_to_img(grid, ver, w, h)
+# ---- arc03#3494 terrain chars: NOT patched (kept original 空陸海宇 per request) ----
+print("arc03#3494 terrain chars: kept original (reverted per user request)")
 
 res = pickle.load(open(os.path.join(STATE, "newres", "spirits.pkl"), "rb"))
-res.pop(17, None)  # ensure old (broken) save-screen patch is removed
+res.pop(17, None)    # remove old (broken) save-screen patch
+res.pop(3494, None)  # remove terrain-char patch (revert to original)
 res.update(new03)
 pickle.dump(res, open(os.path.join(STATE, "newres", "spirits.pkl"), "wb"))
 print("saved into spirits.pkl; total:", len(res), "(17 present:", 17 in res, ")")
