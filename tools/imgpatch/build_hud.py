@@ -120,32 +120,55 @@ for idx, entries in SHEETS.items():
         stamp(grid, m, a, oy, grad_skill)
     new03[idx] = grid_to_img(grid, ver, w, h)
 
-# ---- arc05#6 critical ----
+# ---- arc05#6 critical: green fill + light(2) outline, tall like original ----
 p = payload(get_sub("arc05", 6))
 grid, ver, w, h = img_to_grid(p)
 W = w * 8
-cols = [x for x in range(W) if any(grid[y][x] for y in range(16))]
-# critical = rightmost large run; measured visually starts ~x196
-a, z = 196, 255
-lut_rows = {}
-for y in range(16):
-    c = Counter(grid[y][x] for x in range(a, z + 1) if grid[y][x] not in (0, 1))
-    if c:
-        lut_rows[y] = c.most_common(1)[0][0]
-keys = sorted(lut_rows)
-t0s, t1s = keys[0], keys[-1]
-def lut05(pp):
-    yy = t0s + pp * (t1s - t0s)
-    best = min(keys, key=lambda k: abs(k - yy))
-    return lut_rows[best]
+# original クリティカル katakana occupies x193..255 (band0), icon at 169-190 kept
+a, z = 193, 255
+CRIT_OUTLINE = 2  # light lavender, matches original border
+
+def crit_fill(pp):
+    if pp < 0.30: return 14     # bright green (thick body)
+    if pp < 0.62: return 12
+    if pp < 0.85: return 11
+    return 10
+
+def thicken2(mask, dx=1, dy=1):
+    h2, w2 = len(mask), len(mask[0])
+    out = [[0] * (w2 + dx) for _ in range(h2 + dy)]
+    for y in range(h2):
+        for x in range(w2):
+            if mask[y][x]:
+                for ddy in range(dy + 1):
+                    for ddx in range(dx + 1):
+                        out[y + ddy][x + ddx] = 1
+    return out
+
+def scale_mask(mask, tw, th):
+    im = Image.new("L", (len(mask[0]), len(mask)), 0)
+    for y in range(len(mask)):
+        for x in range(len(mask[0])):
+            if mask[y][x]:
+                im.putpixel((x, y), 255)
+    im = im.resize((tw, th), Image.NEAREST)
+    pp = im.load()
+    return [[1 if pp[x, y] >= 128 else 0 for x in range(tw)] for y in range(th)]
+
+# erase the full katakana region only (keep icon at <=190)
 for y in range(0, 16):
-    for x in range(max(0, a - 2), min(W, z + 1)):
+    for x in range(a, min(W, z + 1)):
         grid[y][x] = 0
-m = shear(to_mask(crisp("크리티컬", 12)), 6)
-m = fit_width(m, z - a - 1)
-stamp(grid, m, a, max(0, t0s - 1), lut05)
+# crisp galmuri, thicken so green strokes are >=2px, scale to fill the band
+mk = thicken2(to_mask(crisp("크리티컬", 12)), 1, 1)
+tw = min(z - a - 1, len(mk[0]) + 6)
+mk = scale_mask(mk, tw, 14)
+mk = shear(mk, 8)
+oy = max(0, (16 - len(mk)) // 2)
+ox = a + max(0, (z - a + 1 - len(mk[0])) // 2)
+stamp(grid, mk, ox, oy, crit_fill, outline=CRIT_OUTLINE)
 pickle.dump({6: grid_to_img(grid, ver, w, h)}, open(os.path.join(STATE, "newres", "hud05.pkl"), "wb"))
-print("arc05#6 done; crit rows", t0s, t1s)
+print(f"arc05#6 critical done: span {a}-{z}, glyph {len(mk[0])}x{len(mk)} at x{ox} y{oy}")
 
 # ---- arc03#17 save messages ----
 MSGS17 = [
