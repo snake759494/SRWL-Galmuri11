@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 """Redraw arc05 battle labels #14-81 (in-place, style sampled from originals)."""
 import os, sys, pickle
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from imglib import get_sub, payload, parse_plt
 from kredraw import img_to_grid, grid_to_img
 from PIL import Image, ImageFont, ImageDraw
 from collections import Counter
 
 SCRATCH = os.path.dirname(__file__)
-OUT = os.path.join(SCRATCH, "out")
-STATE = os.path.join(SCRATCH, "state")
-GALMURI = r"D:\nds\files (1)\Galmuri11.ttf"
+OUT = _CFG.OUT_DIR
+STATE = _CFG.STATE
+GALMURI = _CFG.GALMURI
 F12 = ImageFont.truetype(GALMURI, 12)
 
 LABELS = {

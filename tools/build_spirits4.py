@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 """Spirits v4: wide crisp glyphs, strong black outline, NO small variant."""
 import os, sys, pickle
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from imglib import get_sub, payload, parse_plt
 from kredraw import img_to_grid, grid_to_img
 from PIL import Image, ImageFont, ImageDraw
 
 SCRATCH = os.path.dirname(__file__)
-OUT = os.path.join(SCRATCH, "out")
-STATE = os.path.join(SCRATCH, "state")
-GALMURI = r"D:\nds\files (1)\Galmuri11.ttf"
-GULIM = r"C:\Windows\Fonts\gulim.ttc"
+OUT = _CFG.OUT_DIR
+STATE = _CFG.STATE
+GALMURI = _CFG.GALMURI
+GULIM = _CFG.GULIM
 
 SPIRITS = {
     1988: "열혈", 1989: "혼", 1990: "투지", 1991: "섬광", 1992: "불굴",

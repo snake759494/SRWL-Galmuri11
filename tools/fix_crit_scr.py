@@ -2,11 +2,12 @@
 """Blank the 9th column of SCR#10 (the ル-tail fragment) by remapping to a blank tile.
    Verify a blank tile exists and that no icon/digit is harmed."""
 import os, sys, struct, pickle
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from imglib import get_sub, payload
 from compose import img_tiles, parse_scr
 
-STATE = os.path.join(os.path.dirname(__file__), "state")
+STATE = _CFG.STATE
 
 # find a fully-blank tile index in arc05#6
 p6 = payload(get_sub("arc05", 6))

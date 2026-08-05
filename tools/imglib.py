@@ -1,10 +1,11 @@
 """SRWL archive/IMG/PLT decoding library."""
 import struct, os, sys
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from ecd import ecd_decompress
 from PIL import Image
 
-ROM = r"D:\nds\roms\SRWL\Super Robot Wars L K v0.9.1.nds"
+ROM = _CFG.SRC_ROM
 _data = open(ROM, "rb").read()
 
 ARCS = {

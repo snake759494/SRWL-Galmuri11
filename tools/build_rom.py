@@ -1,10 +1,11 @@
 import os, sys
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from blz import blz_decompress
 
-OUT = os.path.join(os.path.dirname(__file__), "out")
-SRC_ROM = r"D:\nds\roms\SRWL\Super Robot Wars L K v0.9.1.nds"
-DST_ROM = r"D:\nds\roms\SRWL\Super Robot Wars L K v0.9.1 - Galmuri11.nds"
+OUT = _CFG.OUT_DIR
+SRC_ROM = _CFG.SRC_ROM
+DST_ROM = _CFG.FONT_ROM
 
 rom = bytearray(open(SRC_ROM, "rb").read())
 arm9_new = open(os.path.join(OUT, "arm9_L_galmuri_blz.bin"), "rb").read()
@@ -37,7 +38,7 @@ print("end-to-end arm9 decompress == patched plaintext ✓")
 
 # verification 3: hangul glyphs in decompressed == Galmuri renders (spot re-verify all)
 from PIL import Image, ImageFont, ImageDraw
-FONT = r"D:\nds\files (1)\Galmuri11.ttf"
+FONT = _CFG.GALMURI
 font = ImageFont.truetype(FONT, 12)
 hangul = []
 for row in range(0x30, 0x49):

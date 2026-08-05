@@ -7,9 +7,10 @@ palette indices so no palette changes are needed.
 import os, struct, sys
 from PIL import Image, ImageFont, ImageDraw
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 
-GALMURI11 = r"D:\nds\files (1)\Galmuri11.ttf"
+GALMURI11 = _CFG.GALMURI
 _fonts = {}
 
 def get_font(px):

@@ -1,4 +1,7 @@
 """Nintendo BLZ (backward LZ) decompressor for arm9 binaries."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 import struct
 
 def blz_decompress(comp: bytes) -> bytes:
@@ -43,18 +46,15 @@ def blz_decompress(comp: bytes) -> bytes:
 
 
 if __name__ == "__main__":
-    import os
-    OUT = os.path.join(os.path.dirname(__file__), "out")
-    for tag, path, size in [
-        ("L", r"D:\nds\roms\SRWL\Super Robot Wars L K v0.9.1.nds", 351628),
-        ("K", r"D:\nds\roms\SRWK\Super Robot Wars K.nds", 613560),
-    ]:
-        data = open(path, "rb").read()
-        arm9 = data[0x4000 : 0x4000 + size]
-        try:
-            dec = blz_decompress(arm9)
-            print(f"{tag}: {size} -> {len(dec)}")
-        except ValueError as e:
-            dec = arm9
-            print(f"{tag}: not BLZ ({e}), keeping raw")
-        open(os.path.join(OUT, f"arm9_{tag}.bin"), "wb").write(dec)
+    # Extract + BLZ-decompress the SRW L arm9 from the source ROM.
+    A9_OFF, A9_SZ = 0x4000, 351628
+    data = open(_CFG.SRC_ROM, "rb").read()
+    arm9 = data[A9_OFF : A9_OFF + A9_SZ]
+    try:
+        dec = blz_decompress(arm9)
+        print(f"L arm9: {A9_SZ} -> {len(dec)}")
+    except ValueError as e:
+        dec = arm9
+        print(f"L arm9: not BLZ ({e}), keeping raw")
+    open(os.path.join(_CFG.OUT_DIR, "arm9_L.bin"), "wb").write(dec)
+    print("wrote", os.path.join(_CFG.OUT_DIR, "arm9_L.bin"))

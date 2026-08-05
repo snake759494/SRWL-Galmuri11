@@ -7,7 +7,9 @@ Decoder semantics (from blz.py):
   flag bit 0 -> literal byte.
   stops when dst reaches cstart (all output written).
 """
-import os, struct
+import os, sys, struct
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from collections import defaultdict
 
 MINLEN, MAXLEN = 3, 18
@@ -114,7 +116,7 @@ def build_arm9(patched: bytes, orig_comp_len_total: int, total_size: int, cstart
 
 
 if __name__ == "__main__":
-    OUT = os.path.join(os.path.dirname(__file__), "out")
+    OUT = _CFG.OUT_DIR
     patched = open(os.path.join(OUT, "arm9_L_galmuri.bin"), "rb").read()
     TOTAL = 351628
     CSTART = 0x4001
@@ -124,8 +126,6 @@ if __name__ == "__main__":
     else:
         open(os.path.join(OUT, "arm9_L_galmuri_blz.bin"), "wb").write(arm9)
         # roundtrip verify with our decoder
-        import sys
-        sys.path.insert(0, os.path.dirname(__file__))
         from blz import blz_decompress
         dec = blz_decompress(arm9)
         print("roundtrip equal:", dec == patched)

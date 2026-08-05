@@ -1,10 +1,11 @@
 """Tight-fit BLZ builder: raw head grows until stream ends exactly at cstart."""
 import os, sys, struct
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from blz_enc import blz_encode_stream, MINLEN
 from blz import blz_decompress
 
-OUT = os.path.join(os.path.dirname(__file__), "out")
+OUT = _CFG.OUT_DIR
 TOTAL = 351628
 HDR = 8
 

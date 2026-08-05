@@ -1,9 +1,12 @@
 """Replace SRWL hangul glyphs (2350) with Galmuri11, patch arm9."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 import os
 from PIL import Image, ImageFont, ImageDraw
 
-OUT = os.path.join(os.path.dirname(__file__), "out")
-FONT = r"D:\nds\files (1)\Galmuri11.ttf"
+OUT = _CFG.OUT_DIR
+FONT = _CFG.GALMURI
 HG_CELL0 = 0x61EA0       # first hangul cell (code halfword at +0, pixels at +2)
 N_HG = 2350
 

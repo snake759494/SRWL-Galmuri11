@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 import os, sys, pickle
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from imglib import get_sub, payload
 from kredraw import img_to_grid, grid_to_img
 from PIL import Image, ImageFont, ImageDraw
 
 SCRATCH = os.path.dirname(__file__)
-STATE = os.path.join(SCRATCH, "state")
-GALMURI = r"D:\nds\files (1)\Galmuri11.ttf"
+STATE = _CFG.STATE
+GALMURI = _CFG.GALMURI
 
 p = payload(get_sub("arc03", 1783))
 grid, ver, w, h = img_to_grid(p)

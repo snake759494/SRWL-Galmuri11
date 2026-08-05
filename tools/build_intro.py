@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Translate intro text screen arc03#3147 (+SCR 3148)."""
 import os, sys, pickle, struct
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from imglib import get_sub, payload, parse_plt
 from compose import parse_scr, img_tiles
 from build_titles import (build_ramp, quantize_to_ramp, render_text_gray,
@@ -9,9 +10,9 @@ from build_titles import (build_ramp, quantize_to_ramp, render_text_gray,
 from PIL import Image, ImageFont, ImageDraw
 
 SCRATCH = os.path.dirname(__file__)
-OUT = os.path.join(SCRATCH, "out")
-STATE = os.path.join(SCRATCH, "state")
-BATANG = r"C:\Windows\Fonts\batang.ttc"
+OUT = _CFG.OUT_DIR
+STATE = _CFG.STATE
+BATANG = _CFG.BATANG
 
 LINES = [
     "우주.",

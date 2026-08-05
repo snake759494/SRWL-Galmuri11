@@ -36,6 +36,20 @@
 xdelta3 -d -s "SRWL_K_v0.9.1.nds" SRWL_K_v0.9.1_Galmuri11_IMG.xdelta "SRWL_K_v0.9.1_Galmuri11_IMG.nds"
 ```
 
+## 직접 빌드하거나 번역을 수정하려면
+
+이 저장소는 **소스에서 패치를 처음부터 재생성**할 수 있는 전체 파이프라인·폰트·번역 데이터를
+모두 포함합니다. 게임 롬만 직접 준비하면, 다음 한 줄로 배포본과 **바이트 단위로 동일한** 롬이 만들어집니다.
+
+```bash
+pip install -r requirements.txt
+# Windows(PowerShell): $env:SRWL_SRC_ROM = "C:\path\to\SRWL_K_v0.9.1.nds"
+# macOS/Linux:         export SRWL_SRC_ROM=/path/to/SRWL_K_v0.9.1.nds
+python tools/build_all.py     # → build/SRWL_Galmuri11_IMG.nds (MD5 A6FF7A38…)
+```
+
+자세한 빌드·수정 방법(번역 파일 위치, 환경변수, 폰트 지정 등)은 **[BUILD.md](BUILD.md)** 를 참고하세요.
+
 ## 한글화된 이미지 (v1.2)
 
 - **오프닝 스크롤 텍스트** — 우주. 그것은 인류에게 남겨진 최후의 프론티어… (양끝 여백 확보)
@@ -73,7 +87,7 @@ xdelta3 -d -s "SRWL_K_v0.9.1.nds" SRWL_K_v0.9.1_Galmuri11_IMG.xdelta "SRWL_K_v0.
 - 시나리오 제목·오프닝·판권 화면은 타일+타일맵(SCR) 재생성, 명조 스타일은 바탕체 AA 렌더를 원본 팔레트 램프로 양자화
 - 정신기 컷인은 원본 표시 영역 측정 후 돋움 크리스프 렌더 + 그라데이션 LUT + 검은 외곽선
 - HUD 사전 시트는 단어별 픽셀 좌표를 잉크 런 분석으로 확정해 같은 자리에 교체
-- 추출·빌드 스크립트 전체: [`tools/`](tools/)
+- 전체 빌드 파이프라인·번역 데이터·폰트가 저장소에 포함되어 **소스에서 완전 재현 가능** — [`tools/`](tools/), [BUILD.md](BUILD.md) 참고
 
 ## 원 한글패치 (기반 저작물)
 
@@ -103,8 +117,10 @@ xdelta3 -d -s "SRWL_K_v0.9.1.nds" SRWL_K_v0.9.1_Galmuri11_IMG.xdelta "SRWL_K_v0.
 
 ## 폰트·기타 크레딧
 
-- **갈무리(Galmuri) 폰트**: [quiple](https://github.com/quiple/galmuri) 제작,
-  [SIL Open Font License 1.1](https://scripts.sil.org/OFL) — 본 패치에는 Galmuri11의 비트맵 글리프가 포함되어 있습니다.
+- **갈무리(Galmuri) 폰트**: Lee Minseo([quiple](https://github.com/quiple/galmuri)) 제작,
+  [SIL Open Font License 1.1](https://scripts.sil.org/OFL). 재현 편의를 위해 `fonts/Galmuri11.ttf`로
+  동봉했으며, 라이선스 전문은 [`fonts/Galmuri11_OFL.txt`](fonts/Galmuri11_OFL.txt)에 있습니다.
+- 시나리오 제목·정신기 축소자 렌더에 Windows 시스템 폰트(바탕/굴림)를 사용합니다(저작권상 미동봉, BUILD.md 참고).
 - 이 저장소에는 게임 롬이 포함되어 있지 않습니다. 패치 적용에는 정품 게임과 슈코넷의 한글패치 v0.9.1이 필요합니다.
 - 원 패치 적용 대상 원본 롬: CRC32 `82804748` / 134,217,728 bytes
 - 『スーパーロボット大戦L』 © BANDAI NAMCO Games / B.B. STUDIO

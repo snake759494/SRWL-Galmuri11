@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """Assemble image-patched ROM from generated resources."""
 import os, sys, pickle, struct
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from imglib import get_sub, payload, ARCS, subfiles, rom_data
 from rebuild import rebuild_rom, wrap_ecd0
 from ecd import ecd_decompress
 
 SCRATCH = os.path.dirname(__file__)
-STATE = os.path.join(SCRATCH, "state")
-OUT_ROM = r"D:\nds\roms\SRWL\Super Robot Wars L K v0.9.1 - Galmuri11-IMG.nds"
+STATE = _CFG.STATE
+OUT_ROM = _CFG.OUT_ROM
 
 titles = pickle.load(open(os.path.join(STATE, "newres", "titles_tc.pkl"), "rb"))
 spirits = pickle.load(open(os.path.join(STATE, "newres", "spirits.pkl"), "rb"))

@@ -1,9 +1,10 @@
 """Rebuild arc archives and ROM with replaced subfiles."""
 import struct, os, sys
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from imglib import ARCS, subfiles
 
-ROM = r"D:\nds\roms\SRWL\Super Robot Wars L K v0.9.1 - Galmuri11.nds"  # base = galmuri ROM
+ROM = _CFG.FONT_ROM  # base = galmuri ROM
 
 def wrap_ecd0(payload: bytes) -> bytes:
     n = len(payload)
@@ -85,7 +86,7 @@ def rebuild_rom(arc_replacements, out_path):
 
 if __name__ == "__main__":
     # smoke test: rebuild with no replacements -> FAT/layout identical?
-    total, moved = rebuild_rom({}, os.path.join(os.path.dirname(__file__), "out", "rebuild_noop.nds"))
+    total, moved = rebuild_rom({}, os.path.join(_CFG.OUT_DIR, "rebuild_noop.nds"))
     orig = open(ROM, "rb").read()
-    new = open(os.path.join(os.path.dirname(__file__), "out", "rebuild_noop.nds"), "rb").read()
+    new = open(os.path.join(_CFG.OUT_DIR, "rebuild_noop.nds"), "rb").read()
     print("sizes:", len(orig), len(new), "identical:", orig == new)

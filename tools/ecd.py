@@ -1,4 +1,7 @@
 """ECD decompressor ported from SRW K/L arm9 @0x200E8AC (LZSS, 1KB ring)."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 
 def ecd_decompress(src: bytes) -> bytes:
     assert src[:3] == b"ECD", "not ECD"
@@ -41,7 +44,7 @@ def ecd_decompress(src: bytes) -> bytes:
 
 if __name__ == "__main__":
     import os
-    OUT = os.path.join(os.path.dirname(__file__), "out")
+    OUT = _CFG.OUT_DIR
     blob = open(os.path.join(OUT, "srwk_state.bin"), "rb").read()
     RAM = blob[0xC6C0 : 0xC6C0 + 0x400000]
     src = RAM[0x43CF4 : 0x43CF4 + 16 + 436]

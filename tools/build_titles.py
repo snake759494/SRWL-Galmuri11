@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 """Build Korean scenario title cards + time cards (IMG+SCR replacement)."""
 import os, sys, json, struct
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config as _CFG
 from imglib import get_sub, payload, parse_plt
 from compose import parse_scr, img_tiles
 from PIL import Image, ImageFont, ImageDraw
 from collections import Counter
 
 SCRATCH = os.path.dirname(__file__)
-OUT = os.path.join(SCRATCH, "out")
-STATE = os.path.join(SCRATCH, "state")
+OUT = _CFG.OUT_DIR
+STATE = _CFG.STATE
 os.makedirs(os.path.join(STATE, "newres"), exist_ok=True)
 
-BATANG = r"C:\Windows\Fonts\batang.ttc"
+BATANG = _CFG.BATANG
 
 def luminance(c):
     return 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]
@@ -97,7 +98,7 @@ def text_rows(grid, bg=0):
     return [y for y in range(len(grid)) if any(v != bg for v in grid[y])]
 
 # ---------- scenario titles ----------
-titles = json.load(open(os.path.join(STATE, "titles_ko.json"), encoding="utf-8"))
+titles = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "titles_ko.json"), encoding="utf-8"))
 plt = parse_plt(payload(get_sub("arc03", 3395)))
 ramp = build_ramp(plt, 0, exclude=(0,))
 f14 = ImageFont.truetype(BATANG, 14)
