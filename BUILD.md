@@ -109,6 +109,7 @@ python tools/build_all.py
     ├─ (이미지 빌드) build_titles.py build_spirits4.py build_arc05.py
     │                build_intro.py build_credits.py build_hud.py
     │                add_area.py fix_crit_scr.py assemble_images.py
+    ├─ verify_rom.py             완성 롬에서 리소스 되읽어 렌더(독립 검증)
     └─ (번역 데이터) titles_ko.json terms_ko.py
 ```
 
@@ -126,5 +127,7 @@ python tools/build_all.py
 9. `build_arc05.py` — 전투 표시 라벨
 10. `fix_crit_scr.py` — 크리티컬 배너 잔여 조각 제거(SCR#10 리맵)
 11. `assemble_images.py` — 폰트 롬 + 모든 이미지 리소스를 합쳐 최종 롬 생성
+
+빌드 후 `python tools/verify_rom.py` 를 실행하면 **완성된 롬에서 리소스를 직접 되읽어** 제목·시간카드·정신기·전투 라벨을 PNG로 렌더합니다(`build/out/final_verify.png`). 빌드 중간 데이터가 아니라 롬에 실제로 들어간 내용을 확인하는 독립 검증입니다.
 
 기술적 배경(폰트 셀 포맷, ECD/BLZ 압축, 타일맵 구조 등)은 README의 "기술 정보" 참조.
