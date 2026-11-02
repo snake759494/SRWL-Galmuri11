@@ -73,27 +73,42 @@ for (img_i, scr_i), lines in SCREENS.items():
         prev = y
     bands.append((start, prev))
     print(img_i, "bg idx:", bg, "bands:", len(bands), bands)
-    canvas = [[bg] * 256 for _ in range(h * 8)]
-    for bi in range(min(len(bands), len(lines))):
-        b0, b1 = bands[bi]
-        g, a = render_text_gray(lines[bi], f13, stroke=0)
-        if a.width > 250:
-            g, a = render_text_gray(lines[bi], f12, stroke=0)
-        if a.width > 250:
-            g = g.resize((250, g.height), Image.LANCZOS)
-            a = a.resize((250, a.height), Image.LANCZOS)
-        x0 = (256 - a.width) // 2
-        yc = (b0 + b1) // 2 - a.height // 2
-        ga, aa = g.load(), a.load()
-        for y in range(a.height):
-            for x in range(a.width):
-                if aa[x, y] < 40:
-                    continue
-                yy, xx = yc + y, x0 + x
-                if 0 <= yy < len(canvas) and 0 <= xx < 256:
-                    canvas[yy][xx] = quantize_to_ramp(ga[x, y], ramp)
-    new_tiles, new_entries = tiles_from_canvas(canvas)
-    print(img_i, "unique tiles:", len(new_tiles))
+    # The engine uploads this BG with the ORIGINAL tile count, so the rebuilt
+    # tile set must stay within it (extra tiles never reach VRAM).
+    BUDGET = len(tiles)
+
+    def build_canvas(font, alpha_thr):
+        cv = [[bg] * 256 for _ in range(h * 8)]
+        for bi in range(min(len(bands), len(lines))):
+            b0, b1 = bands[bi]
+            g, a = render_text_gray(lines[bi], font, stroke=0)
+            if a.width > 250:
+                g, a = render_text_gray(lines[bi], f12, stroke=0)
+            if a.width > 250:
+                g = g.resize((250, g.height), Image.LANCZOS)
+                a = a.resize((250, a.height), Image.LANCZOS)
+            x0 = (256 - a.width) // 2
+            yc = (b0 + b1) // 2 - a.height // 2
+            ga, aa = g.load(), a.load()
+            for y in range(a.height):
+                for x in range(a.width):
+                    if aa[x, y] < alpha_thr:
+                        continue
+                    yy, xx = yc + y, x0 + x
+                    if 0 <= yy < len(cv) and 0 <= xx < 256:
+                        cv[yy][xx] = quantize_to_ramp(ga[x, y], ramp)
+        return cv
+
+    canvas = new_tiles = new_entries = None
+    for sz, athr in ((13, 40), (12, 40), (11, 60), (10, 80), (9, 90)):
+        cand = build_canvas(ImageFont.truetype(BATANG, sz), athr)
+        t, e = tiles_from_canvas(cand)
+        canvas, new_tiles, new_entries = cand, t, e
+        if len(t) <= BUDGET:
+            break
+        print(f"  {img_i}: size={sz} -> {len(t)} tiles over budget {BUDGET}, shrinking")
+    assert len(new_tiles) <= BUDGET, f"{img_i}: {len(new_tiles)} tiles exceed budget {BUDGET}"
+    print(img_i, "unique tiles:", len(new_tiles), "/ budget", BUDGET)
     res[img_i] = make_img_payload(new_tiles)
     res[scr_i] = make_scr_payload(new_entries, 32, h)
     # preview

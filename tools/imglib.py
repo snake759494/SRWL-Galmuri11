@@ -20,12 +20,21 @@ ARCS = {
 def rom_data():
     return _data
 
+_subfile_cache = {}
+
 def subfiles(name):
+    """Offset table of an archive. Cached: rebuilding it per lookup made
+    get_sub() quadratic on big archives (arc06 has 26k subfiles)."""
+    hit = _subfile_cache.get(name)
+    if hit is not None:
+        return hit
     base, size = ARCS[name]
     first = struct.unpack_from("<I", _data, base)[0]
     n = first // 4
     offs = list(struct.unpack_from(f"<{n}I", _data, base)) + [size]
-    return [(i, base + offs[i], offs[i + 1] - offs[i]) for i in range(n)]
+    out = [(i, base + offs[i], offs[i + 1] - offs[i]) for i in range(n)]
+    _subfile_cache[name] = out
+    return out
 
 def get_sub(name, i):
     subs = subfiles(name)

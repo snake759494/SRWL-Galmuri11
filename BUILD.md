@@ -15,7 +15,7 @@
 1. **xdelta3** 또는 [xdelta UI](https://www.romhacking.net/utilities/598/)를 준비합니다.
 2. 원본으로 **한글패치 v0.9.1이 적용된 롬**을 지정합니다. (MD5 `7AB930182FF9D0F4C4EFC96673E112D6`)
 3. 패치로 다음 중 하나를 지정합니다.
-   - `patch/SRWL_K_v0.9.1_Galmuri11_IMG.xdelta` — **폰트 + 이미지(권장)** → 결과 MD5 `A6FF7A389EF7AA1E4DB146E59755E8C1`
+   - `patch/SRWL_K_v0.9.1_Galmuri11_IMG.xdelta` — **폰트 + 이미지(권장)** → 결과 MD5 `ABAAEAC710D5A3A8BBD1DE17A8B24622`
    - `patch/SRWL_K_v0.9.1_Galmuri11.xdelta` — 폰트만 → 결과 MD5 `36ADDB073C1223510B2BA48B16427DF6`
 
 명령줄:

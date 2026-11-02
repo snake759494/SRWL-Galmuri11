@@ -53,7 +53,8 @@ def main():
     print(f"build dir  : {_CFG.BUILD}\n")
     for i, (desc, script) in enumerate(STEPS, 1):
         print(f"[{i}/{len(STEPS)}] {desc}  ({script})")
-        r = subprocess.run([sys.executable, os.path.join(HERE, script)], cwd=HERE)
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
+        r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(HERE, script)], cwd=HERE, env=env)
         if r.returncode != 0:
             sys.exit(f"[!] step failed: {script}")
     print(f"\nfont ROM   : {_CFG.FONT_ROM}  (md5 {md5(_CFG.FONT_ROM)})")

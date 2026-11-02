@@ -58,36 +58,64 @@ print("original line bands:", bands)
 ramp = build_ramp(plt, 0, exclude=(0,))
 f13 = ImageFont.truetype(BATANG, 13)
 f12 = ImageFont.truetype(BATANG, 12)
+FONTS = [ImageFont.truetype(BATANG, sz) for sz in (13, 12, 11, 10)]
 
 # keep >=1 tile (8px) margin on each side: text must fit within x[MARGIN, 256-MARGIN]
 MARGIN = 8
 MAXW = 256 - 2 * MARGIN  # 240
-canvas = [[0] * 256 for _ in range(h * 8)]
-n = min(len(bands), len(LINES))
-for bi in range(n):
-    b0, b1 = bands[bi]
-    txt = LINES[bi]
-    g, a = render_text_gray(txt, f13, stroke=0)
-    if a.width > MAXW:
-        g, a = render_text_gray(txt, f12, stroke=0)
-    if a.width > MAXW:
-        g = g.resize((MAXW, g.height), Image.LANCZOS)
-        a = a.resize((MAXW, a.height), Image.LANCZOS)
-    x0 = max(MARGIN, (256 - a.width) // 2)
-    if x0 + a.width > 256 - MARGIN:
-        x0 = 256 - MARGIN - a.width
-    yc = (b0 + b1) // 2 - a.height // 2
-    ga, aa = g.load(), a.load()
-    for y in range(a.height):
-        for x in range(a.width):
-            if aa[x, y] < 40:
-                continue
-            yy, xx = yc + y, x0 + x
-            if 0 <= yy < len(canvas) and 0 <= xx < 256:
-                canvas[yy][xx] = quantize_to_ramp(ga[x, y], ramp)
+# The engine uploads this BG with the ORIGINAL tile count, so the rebuilt tile
+# set must not grow past it - extra tiles would never reach VRAM and the screen
+# would show stale/garbled cells instead of the translated lines.
+BUDGET = len(tiles)
 
-new_tiles, new_entries = tiles_from_canvas(canvas)
-print("unique tiles:", len(new_tiles))
+def build_canvas(ramp_sub, alpha_thr, font):
+    cv = [[0] * 256 for _ in range(h * 8)]
+    n = min(len(bands), len(LINES))
+    for bi in range(n):
+        b0, b1 = bands[bi]
+        txt = LINES[bi]
+        g, a = render_text_gray(txt, font, stroke=0)
+        if a.width > MAXW:
+            g, a = render_text_gray(txt, f12, stroke=0)
+        if a.width > MAXW:
+            g = g.resize((MAXW, g.height), Image.LANCZOS)
+            a = a.resize((MAXW, a.height), Image.LANCZOS)
+        x0 = max(MARGIN, (256 - a.width) // 2)
+        if x0 + a.width > 256 - MARGIN:
+            x0 = 256 - MARGIN - a.width
+        yc = (b0 + b1) // 2 - a.height // 2
+        ga, aa = g.load(), a.load()
+        for y in range(a.height):
+            for x in range(a.width):
+                if aa[x, y] < alpha_thr:
+                    continue
+                yy, xx = yc + y, x0 + x
+                if 0 <= yy < len(cv) and 0 <= xx < 256:
+                    cv[yy][xx] = quantize_to_ramp(ga[x, y], ramp_sub)
+    return cv
+
+def coarsen(r, step):
+    sub = r[::step]
+    if r[-1] not in sub:
+        sub = sub + [r[-1]]
+    return sub
+
+canvas, new_tiles, new_entries = None, None, None
+done = False
+for font in FONTS:
+    for step, athr in ((1, 40), (3, 80), (99, 110)):
+        cand = build_canvas(coarsen(ramp, step), athr, font)
+        t, e = tiles_from_canvas(cand)
+        print(f"  try size={font.size} step={step} alpha>={athr}: {len(t)} tiles (budget {BUDGET})")
+        canvas, new_tiles, new_entries = cand, t, e
+        if len(t) <= BUDGET:
+            done = True
+            break
+    if done:
+        break
+assert len(new_tiles) <= BUDGET, f"intro tiles {len(new_tiles)} exceed budget {BUDGET}"
+
+print("unique tiles:", len(new_tiles), "/ budget", BUDGET)
 res = pickle.load(open(os.path.join(STATE, "newres", "titles_tc.pkl"), "rb"))
 res[3147] = make_img_payload(new_tiles)
 res[3148] = make_scr_payload(new_entries, 32, h)
